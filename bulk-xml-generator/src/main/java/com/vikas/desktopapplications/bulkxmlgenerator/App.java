@@ -5,7 +5,8 @@ public class App
 {    
     public static void main( String[] args )
     {
-    	UIGenerator.createFileChooser();
+    	UIGenerator u = new UIGenerator(); u.createFileChooser();
+    	//MyFrame f = new MyFrame();
     }   
     
 }
