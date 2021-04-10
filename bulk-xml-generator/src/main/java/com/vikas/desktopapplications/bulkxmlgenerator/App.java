@@ -1,12 +1,13 @@
 package com.vikas.desktopapplications.bulkxmlgenerator;
 
-
 public class App
 {    
     public static void main( String[] args )
     {
-    	UIGenerator u = new UIGenerator(); u.createFileChooser();
-    	//MyFrame f = new MyFrame();
+    	UIGenerator u = new UIGenerator(); 
+    	u.createFileChooser();
+
+    	//MyFrame m = new MyFrame();
     }   
     
 }
