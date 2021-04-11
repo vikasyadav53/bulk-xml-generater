@@ -6,8 +6,7 @@ public class App
     {
     	UIGenerator u = new UIGenerator(); 
     	u.createFileChooser();
-
-    	//MyFrame m = new MyFrame();
+    	 
     }   
     
 }
