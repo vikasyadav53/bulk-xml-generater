@@ -45,6 +45,7 @@ public class UIGenerator extends JFrame implements ActionListener {
 	JScrollPane scrollableTextArea;
 	Employee returnType;
 	String objectTypeName;
+	Integer counter=0;
 
 	UIGenerator() {
 	}
@@ -54,7 +55,7 @@ public class UIGenerator extends JFrame implements ActionListener {
 	public void createFileChooser() {
 
 		setTitle("Builk XML Generator");
-		setBounds(300, 90, 700, 600);
+		setBounds(300, 90, 700, 700);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setResizable(false);
 
@@ -73,7 +74,7 @@ public class UIGenerator extends JFrame implements ActionListener {
 		tname.setLocation(270, 100);
 		c.add(tname);
 
-		rootname = new JLabel("Uplod Root");
+		rootname = new JLabel("XML Counts");
 		rootname.setFont(new Font("Arial", Font.PLAIN, 20));
 		rootname.setSize(150, 20);
 		rootname.setLocation(100, 150);
@@ -135,28 +136,11 @@ public class UIGenerator extends JFrame implements ActionListener {
 				} else {
 					StringBuffer output = generateClassesFromXSD();
 					output.append("\n");
-					RandomObjectFiller r = new RandomObjectFiller();
 					try {
-						String rootName = roottname.getText();
-						System.out.println(rootName);
-						Object e1 = r.createAndFill(Employee.class);
-						output.append(r.toString());
-						textArea.setText(output.toString());
-						if (e1 instanceof Employee) {
-							Employee e2 = (Employee) e1;
-							 try {
-						    		ObjectFactory objFactory = new ObjectFactory();
-									JAXBContext contextObj = JAXBContext.newInstance(ObjectFactory.class);
-									JAXBElement<Employee> jaxbElement = objFactory.createEmployee(e2);
-									Marshaller marshallerObj = contextObj.createMarshaller();  
-									marshallerObj.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-									marshallerObj.marshal(jaxbElement, new FileOutputStream("C://Users//Vikas Yadav//question.xml"));
-								} catch (JAXBException | FileNotFoundException e) {
-									e.printStackTrace();
-								} 
-						} else {
-							System.out.println(false);
-						}
+						String counterS = roottname.getText();
+						counter= Integer.valueOf(counterS);
+						manageThreads();
+						
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -195,12 +179,8 @@ public class UIGenerator extends JFrame implements ActionListener {
 		}
 	}
 	
-	public Employee getObject() {
-		return returnType; 
-	}
-	
-	public String getObjectTypeName() {
-		return objectTypeName;
+	public Integer getCounter() {
+		return counter;
 	}
 
 	private StringBuffer generateClassesFromXSD() {
@@ -223,6 +203,35 @@ public class UIGenerator extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public void manageThreads() {
+		Integer counter = this.getCounter();
+    	Runtime runtime = Runtime.getRuntime();
+    	//int noOfProcessor =runtime.availableProcessors();
+    	int noOfProcessor =20000;
+    	System.out.println("No of Processor -> " + noOfProcessor);
+    	Thread[][] producers = new Thread[noOfProcessor][2];
+    	for (int i =0; i<noOfProcessor; i++) {
+    		RandomObjectFiller r = new RandomObjectFiller();
+    		ObjectXMLGeneratorService oxgService = new ObjectXMLGeneratorService(false, r);
+    		XMLGenerator xg = new XMLGenerator(oxgService);
+    		ObjectGenerator og = new ObjectGenerator(oxgService);
+    		producers[i][0]=new Thread(og);
+    		producers[i][1]=new Thread(xg);
+    		producers[i][0].start();
+    		producers[i][1].start();
+    	}
+    	
+    	for (int i =0; i<noOfProcessor; i++) {
+    		try {
+    			producers[i][0].join();
+				producers[i][1].join();
+				System.out.println("File generation complete");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+    	}
 	}
 
 }
