@@ -1,0 +1,52 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch
+        http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/util
+    ">
+
+	<batch:job id="xmlToDBRecordConversionJob">
+		<batch:step id="step1">
+			<batch:tasklet>
+				<batch:chunk reader="xmlMultiResourceReader"
+					writer="dbRecordItemWriter" processor="itemProcessor"
+					commit-interval="10">
+				</batch:chunk>
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+
+	<bean id="xmlMultiResourceReader"
+		class="org.springframework.batch.item.file.MultiResourceItemReader">
+		<property name="resources"
+			value="file:/var/data/input/file-*.txt" />
+		<property name="delegate" ref="xmlFileItemReader" />
+	</bean>
+
+	<bean id="xmlFileItemReader"
+		class="org.springframework.batch.item.xml.StaxEventItemReader">
+		<property name="resource" value="" />
+		<property name="fragmentRootElementName" value="" />
+		<property name="unmarshaller" ref="xmlMarshaller" />
+	</bean>
+	
+	<bean id="xmlMarshaller"
+      class="org.springframework.oxm.xstream.XStreamMarshaller">
+    <property name="aliases">
+        <util:map id="aliases">
+            <entry key="trade"
+                   value="org.springframework.batch.sample.domain.trade.Trade" />
+            <entry key="price" value="java.math.BigDecimal" />
+            <entry key="isin" value="java.lang.String" />
+            <entry key="customer" value="java.lang.String" />
+            <entry key="quantity" value="java.lang.Long" />
+        </util:map>
+    </property>
+</bean>
+
+
+</beans>
